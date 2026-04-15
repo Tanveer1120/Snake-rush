@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ultra Realistic Funny Snake 🐍</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle, #1a1a1a, #000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: Arial;
+    }
+
+    canvas {
+      background: #111;
+      border: 4px solid #0f0;
+      box-shadow: 0 0 30px #0f0;
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+  <canvas id="game" width="500" height="500"></canvas>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const box = 20;
+
+    let snake = [{ x: 10 * box, y: 10 * box }];
+    let direction = 'RIGHT';
+    let food = {
+      x: Math.floor(Math.random() * 24) * box,
+      y: Math.floor(Math.random() * 24) * box
+    };
+
+    let score = 0;
+
+    document.addEventListener('keydown', changeDirection);
+
+    function changeDirection(e) {
+      if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+      else if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+      else if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+      else if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+    }
+
+    function drawSnakeSegment(x, y, index) {
+      const gradient = ctx.createRadialGradient(x+10, y+10, 2, x+10, y+10, 12);
+      gradient.addColorStop(0, '#66ff66');
+      gradient.addColorStop(1, '#003300');
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(x + 10, y + 10, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (index === 0) {
+        // eyes
+        ctx.fillStyle = 'white';
+        ctx.beginPath(); ctx.arc(x+6, y+6, 2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x+14, y+6, 2, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = 'black';
+        ctx.beginPath(); ctx.arc(x+6, y+6, 1, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x+14, y+6, 1, 0, Math.PI*2); ctx.fill();
+      }
+    }
+
+    function drawFood() {
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(food.x + 10, food.y + 10, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // funny shine
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(food.x + 6, food.y + 6, 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function collision(head, array) {
+      for (let i = 0; i < array.length; i++) {
+        if (head.x === array[i].x && head.y === array[i].y) return true;
+      }
+      return false;
+    }
+
+    function draw() {
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      snake.forEach((s, i) => drawSnakeSegment(s.x, s.y, i));
+
+      drawFood();
+
+      let snakeX = snake[0].x;
+      let snakeY = snake[0].y;
+
+      if (direction === 'LEFT') snakeX -= box;
+      if (direction === 'UP') snakeY -= box;
+      if (direction === 'RIGHT') snakeX += box;
+      if (direction === 'DOWN') snakeY += box;
+
+      if (snakeX === food.x && snakeY === food.y) {
+        score++;
+        document.getElementById('score').innerText = 'Score: ' + score;
+        food = {
+          x: Math.floor(Math.random() * 24) * box,
+          y: Math.floor(Math.random() * 24) * box
+        };
+      } else {
+        snake.pop();
+      }
+
+      const newHead = { x: snakeX, y: snakeY };
+
+      if (
+        snakeX < 0 || snakeY < 0 ||
+        snakeX >= canvas.width || snakeY >= canvas.height ||
+        collision(newHead, snake)
+      ) {
+        clearInterval(game);
+        alert('😂 Game Over! Your snake got too realistic!');
+      }
+
+      snake.unshift(newHead);
+    }
+
+    const game = setInterval(draw, 100);
+  </script>
+</body>
+</html>
